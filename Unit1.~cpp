@@ -1,0 +1,204 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "Unit1.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+
+int V[9][9],AC[9][9];
+
+int R[31][9] =   {{1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 },{1 ,0 ,1 ,1 ,0 ,1 ,1 ,1 ,1 },{0 ,0 ,0 ,1 ,0 ,0 ,1 ,1 ,1 },
+                  {1 ,1 ,1 ,0 ,0 ,1 ,1 ,1 ,1 },{0 ,0 ,1 ,0 ,0 ,1 ,0 ,1 ,1 },{1 ,1 ,1 ,1 ,0 ,1 ,1 ,0 ,1 },
+                  {1 ,1 ,1 ,0 ,0 ,1 ,0 ,0 ,0 },{1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 },{0 ,0 ,0 ,1 ,0 ,0 ,1 ,1 ,0 },
+                  {0 ,0 ,0 ,1 ,0 ,1 ,1 ,1 ,1 },{0 ,0 ,0 ,0 ,0 ,1 ,0 ,1 ,1 },{0 ,1 ,1 ,0 ,0 ,1 ,0 ,0 ,0 },
+                  {0 ,1 ,1 ,0 ,0 ,0 ,0 ,1 ,1 },{0 ,0 ,1 ,0 ,0 ,1 ,1 ,1 ,1 },{1 ,1 ,1 ,0 ,0 ,1 ,0 ,0 ,1 },
+                  {1 ,1 ,1 ,1 ,0 ,0 ,1 ,0 ,0 },{1 ,0 ,0 ,1 ,0 ,0 ,1 ,1 ,1 },{0 ,1 ,1 ,0 ,0 ,1 ,0 ,1 ,1 },
+                  {1 ,1 ,0 ,1 ,0 ,0 ,1 ,1 ,0 },{0 ,0 ,1 ,1 ,0 ,1 ,1 ,1 ,1 },{1 ,1 ,1 ,0 ,0 ,1 ,0 ,1 ,1 },
+                  {1 ,1 ,1 ,1 ,0 ,1 ,0 ,0 ,1 },{1 ,1 ,0 ,1 ,0 ,0 ,1 ,1 ,1 },{1 ,1 ,1 ,1 ,0 ,1 ,0 ,0 ,0 },
+                  {1 ,1 ,0 ,1 ,0 ,0 ,0 ,0 ,0 },{0 ,0 ,0 ,1 ,0 ,1 ,1 ,0 ,1 },{1 ,1 ,1 ,1 ,0 ,1 ,0 ,0 ,1 },
+                  {0 ,1 ,1 ,0 ,0 ,1 ,1 ,1 ,1 },{1 ,0 ,0 ,1 ,0 ,0 ,1 ,1 ,0 },{1 ,0 ,0 ,1 ,0 ,1 ,1 ,1 ,1 },
+                  {1 ,1 ,1 ,1 ,0 ,0 ,1 ,1 ,1 }};
+//---------------------------------------------------------------------------
+
+void CHARGER_REGLE(int i)
+{
+    AC[0][0] = R[i][0];
+    AC[0][1] = R[i][1];
+    AC[0][2] = R[i][2];
+
+    AC[1][0] = R[i][3];
+    AC[1][1] = R[i][4];
+    AC[1][2] = R[i][5];
+
+    AC[2][0] = R[i][6];
+    AC[2][1] = R[i][7];
+    AC[2][2] = R[i][8];
+}
+//---------------------------------------------------------------------------
+
+void CHARGER_VOISINAGE(int i,int j)
+{
+    V[0][0] = Form1->StringGrid2->Cells[j-1][i-1].ToInt();
+    V[0][1] = Form1->StringGrid2->Cells[j][i-1].ToInt();
+    V[0][2] = Form1->StringGrid2->Cells[j+1][i-1].ToInt();
+
+    V[1][0] = Form1->StringGrid2->Cells[j-1][i].ToInt();
+    V[1][1] = Form1->StringGrid2->Cells[j][i].ToInt();
+    V[1][2] = Form1->StringGrid2->Cells[j+1][i].ToInt();
+
+    V[2][0] = Form1->StringGrid2->Cells[j-1][i+1].ToInt();
+    V[2][1] = Form1->StringGrid2->Cells[j][i+1].ToInt();
+    V[2][2] = Form1->StringGrid2->Cells[j+1][i+1].ToInt();
+
+  /* Form1->ListBox2->Items->Add(IntToStr(V[0][0])+" "+IntToStr(V[0][1])+" "+IntToStr(V[0][2]));
+   Form1->ListBox2->Items->Add(IntToStr(V[1][0])+" "+IntToStr(V[1][1])+" "+IntToStr(V[1][2]));
+   Form1->ListBox2->Items->Add(IntToStr(V[2][0])+" "+IntToStr(V[2][1])+" "+IntToStr(V[2][2]));   */
+}
+
+//---------------------------------------------------------------------------
+
+int NOUVELLE_ETAT()
+{
+ bool Change = true;
+ int i,j,l;
+ for(l=0;l<31;l++)
+ {
+  Change = true;
+  CHARGER_REGLE(l);
+  for (i=0;i<3;i++)
+   for (j=0;j<3;j++)
+    if(AC[i][j] == 1 && V[i][j]==0)
+    {
+     Change = false;
+     break;
+    }
+  if(Change == true)
+  {
+   Form1->ListBox2->Items->Add("Regle Appliquer = "+IntToStr(l));
+   return 1;
+  }
+ }
+ return 0;
+}
+
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+        : TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::BitBtn1Click(TObject *Sender)
+{
+ if (OpenPictureDialog1->Execute())
+ {
+  Image1->Picture->LoadFromFile(OpenPictureDialog1->FileName);
+  Image1->Width = Image1->Picture->Bitmap->Width;
+  Image1->Height = Image1->Picture->Bitmap->Height;
+
+  StringGrid1->ColCount = Image1->Picture->Bitmap->Width+1;
+  StringGrid1->RowCount = Image1->Picture->Bitmap->Height+1;
+
+  StringGrid2->ColCount = Image1->Picture->Bitmap->Width+1;
+  StringGrid2->RowCount = Image1->Picture->Bitmap->Height+1;
+
+  StringGrid1->Cells[0][0] = IntToStr(Image1->Picture->Bitmap->Width)+"/"+IntToStr(Image1->Picture->Bitmap->Height);
+  StringGrid2->Cells[0][0] = IntToStr(Image1->Picture->Bitmap->Width)+"/"+IntToStr(Image1->Picture->Bitmap->Height);
+
+  for (int j=1;j<StringGrid1->ColCount;j++)
+  {
+   StringGrid1->Cells[j][0] = j;
+   StringGrid2->Cells[j][0] = j;
+  }
+  
+  for (int i=1;i<StringGrid1->RowCount;i++)
+  {
+   StringGrid1->Cells[0][i] = i;
+   StringGrid2->Cells[0][i] = i;
+  }
+  
+  for (int j=1;j<StringGrid1->ColCount;j++)
+  {
+   for (int i=1;i<StringGrid1->RowCount;i++)
+   {
+    int VAL,RGB = 0;
+    VAL  = (int)Image1->Canvas->Pixels[i][j];
+    RGB = ((int) GetRValue(ColorToRGB(VAL))+(int) GetGValue(ColorToRGB(VAL))+(int) GetBValue(ColorToRGB(VAL)))%256;
+    if(RGB<=128)
+    {
+     StringGrid1->Cells[j][i] = IntToStr(0);
+     StringGrid2->Cells[j][i] = IntToStr(0);
+    }
+    else
+    {
+     StringGrid1->Cells[j][i] = IntToStr(1);
+     StringGrid2->Cells[j][i] = IntToStr(1);
+    }
+   }
+  }
+ }
+}
+
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::BitBtn2Click(TObject *Sender)
+{
+ Graphics::TBitmap* Image = new  Graphics::TBitmap();
+ Image->Height = Image1->Picture->Height;
+ Image->Width = Image1->Picture->Width;
+
+ ListBox2->Clear();
+
+ for(int k=1;k<=30;k++)
+  for (int i=2;i<StringGrid1->RowCount-1;i++)
+  {
+   for (int j=2;j<StringGrid1->ColCount-1;j++)
+   {
+    CHARGER_VOISINAGE(i,j);
+    StringGrid2->Cells[j][i] = IntToStr(NOUVELLE_ETAT());
+   // Form1->ListBox2->Items->Add("Img["+IntToStr(i)+"-"+IntToStr(j)+"] = "+StringGrid2->Cells[j][i]);
+   // Form1->ListBox2->Items->Add("__________");
+    
+    if(StringGrid2->Cells[j][i].ToInt()==0)
+     Image->Canvas->Pixels[i][j] = RGB(0,0,0);
+    else
+     Image->Canvas->Pixels[i][j] = RGB(255,255,255);
+   }
+  }
+  Image2->Picture->Bitmap->Assign(Image);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::BitBtn3Click(TObject *Sender)
+{
+ Application->Terminate();
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::FormCreate(TObject *Sender)
+{
+/*  StringGrid3->ColCount = 10;
+  StringGrid3->RowCount = 32;
+
+  StringGrid3->Cells[0][0] = "Régles AC";
+  for (int i=1;i<StringGrid3->RowCount;i++)
+   StringGrid3->Cells[0][i] = "Régle"+IntToStr(i);
+  for (int j=1;j<StringGrid3->ColCount;j++)
+   StringGrid3->Cells[j][0] = IntToStr(j);
+
+  for (int i=1;i<StringGrid3->RowCount;i++)
+   for (int j=1;j<StringGrid3->ColCount;j++)
+    StringGrid3->Cells[j][i] = IntToStr(R[i-1][j-1]);*/
+
+  for (int i=0;i<31;i++)
+  {
+   ListBox1->Items->Add(IntToStr(R[i][0])+" "+IntToStr(R[i][1])+" "+IntToStr(R[i][2]));
+   ListBox1->Items->Add(IntToStr(R[i][3])+" "+IntToStr(R[i][4])+" "+IntToStr(R[i][5]));
+   ListBox1->Items->Add(IntToStr(R[i][6])+" "+IntToStr(R[i][7])+" "+IntToStr(R[i][8]));
+   ListBox1->Items->Add("_____Règle"+IntToStr(i)+"_____");
+  }
+}
+//---------------------------------------------------------------------------
